@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Revenue - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cash-stack me-2"></i>Revenue & Net Profit</h2>
+    <div>
+        <form method="GET" class="d-flex gap-2">
+            <input type="date" name="start_date" class="form-control" value="{{ start_date }}" required>
+            <input type="date" name="end_date" class="form-control" value="{{ end_date }}" required>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+</div>
+
+<!-- Revenue Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-white bg-success">
+            <div class="card-body">
+                <h6><i class="bi bi-currency-dollar me-2"></i>Total Revenue</h6>
+                <h3>Rs {{ "{:,.2f}".format(total_revenue) }}</h3>
+                <small>From sales</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-white bg-info">
+            <div class="card-body">
+                <h6><i class="bi bi-graph-up me-2"></i>Total Profit</h6>
+                <h3>Rs {{ "{:,.2f}".format(total_profit) }}</h3>
+                <small>Before expenses</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-white bg-danger">
+            <div class="card-body">
+                <h6><i class="bi bi-wallet2 me-2"></i>Total Expenses</h6>
+                <h3>Rs {{ "{:,.2f}".format(total_expenses) }}</h3>
+                <small>Operating costs</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card border-0 shadow-sm text-white {% if net_profit >= 0 %}bg-primary{% else %}bg-dark{% endif %}">
+            <div class="card-body">
+                <h6><i class="bi bi-cash-coin me-2"></i>Net Profit</h6>
+                <h3>Rs {{ "{:,.2f}".format(net_profit) }}</h3>
+                <small>Profit - Expenses</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Calculation Breakdown -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Calculation Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-muted mb-3">Revenue & Profit</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Sales Revenue:</td>
+                        <td class="text-end fw-bold text-success">Rs {{ "{:,.2f}".format(total_revenue) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Gross Profit (Sales - Purchase Cost):</td>
+                        <td class="text-end fw-bold text-info">Rs {{ "{:,.2f}".format(total_profit) }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted mb-3">Expenses & Net Result</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Total Operating Expenses:</td>
+                        <td class="text-end fw-bold text-danger">Rs {{ "{:,.2f}".format(total_expenses) }}</td>
+                    </tr>
+                    <tr class="table-light">
+                        <td><strong>Net Profit/Loss:</strong></td>
+                        <td class="text-end fw-bold {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            Rs {{ "{:,.2f}".format(net_profit) }}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <div class="progress" style="height: 30px;">
+                {% set profit_percentage = (total_profit / total_revenue * 100) if total_revenue > 0 else 0 %}
+                {% set expense_percentage = (total_expenses / total_revenue * 100) if total_revenue > 0 else 0 %}
+                
+                <div class="progress-bar bg-info" role="progressbar" 
+                     style="width: {{ profit_percentage }}%">
+                    Profit: {{ "{:.1f}".format(profit_percentage) }}%
+                </div>
+                <div class="progress-bar bg-danger" role="progressbar" 
+                     style="width: {{ expense_percentage }}%">
+                    Expenses: {{ "{:.1f}".format(expense_percentage) }}%
+                </div>
+            </div>
+            <small class="text-muted">Profit and expense ratio relative to total revenue</small>
+        </div>
+    </div>
+</div>
+
+<!-- Category Wise Sales -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Category-wise Sales</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Total Sales</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category, total in category_sales %}
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ category }}</span></td>
+                        <td>Rs {{ "{:,.2f}".format(total) }}</td>
+                        <td>
+                            {% set percentage = (total / total_revenue * 100) if total_revenue > 0 else 0 %}
+                            <div class="progress" style="height: 20px; min-width: 100px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ percentage }}%">
+                                    {{ "{:.1f}".format(percentage) }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">No sales data available for this period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

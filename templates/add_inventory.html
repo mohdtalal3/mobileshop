@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Add Inventory - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-plus-circle me-2"></i>Add New Inventory Item</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('inventory') }}">Inventory</a></li>
+            <li class="breadcrumb-item active">Add Item</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('add_inventory') }}">
+                    <div class="mb-3">
+                        <label for="item_name" class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" 
+                               placeholder="e.g., Samsung Galaxy S21" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Mobile Phones">Mobile Phones</option>
+                            <option value="Chargers">Chargers</option>
+                            <option value="Cables">Cables</option>
+                            <option value="Earphones">Earphones</option>
+                            <option value="Accessories">Accessories</option>
+                            <option value="Power Banks">Power Banks</option>
+                            <option value="Screen Protectors">Screen Protectors</option>
+                            <option value="Phone Cases">Phone Cases</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="purchase_price" class="form-label">Purchase Price (Rs) *</label>
+                            <input type="number" step="0.01" class="form-control" id="purchase_price" 
+                                   name="purchase_price" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="quantity" class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" 
+                                   placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="supplier" class="form-label">Supplier (Optional)</label>
+                        <input type="text" class="form-control" id="supplier" name="supplier" 
+                               placeholder="e.g., ABC Electronics">
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Total purchase cost will be calculated automatically 
+                        (Purchase Price × Quantity)
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>Add Item
+                        </button>
+                        <a href="{{ url_for('inventory') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

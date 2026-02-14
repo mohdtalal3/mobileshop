@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Easy Paisa Transaction - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-plus-circle me-2"></i>Add Easy Paisa Transaction</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_easypaisa') }}">
+                    <div class="mb-3">
+                        <label for="transaction_type" class="form-label">Transaction Type <span class="text-danger">*</span></label>
+                        <select class="form-select" id="transaction_type" name="transaction_type" required>
+                            <option value="">Select Type</option>
+                            <option value="Withdraw">Withdraw</option>
+                            <option value="Transfer">Transfer</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="client_name" class="form-label">Client Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="client_name" name="client_name" 
+                               placeholder="Enter client name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone_number" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                               placeholder="03XX-XXXXXXX" pattern="[0-9]{4}-[0-9]{7}" required>
+                        <div class="form-text">Format: 0300-1234567</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="total_amount" class="form-label">Total Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rs.</span>
+                            <input type="number" class="form-control" id="total_amount" name="total_amount" 
+                                   step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="profit_amount" class="form-label">Profit on Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rs.</span>
+                            <input type="number" class="form-control" id="profit_amount" name="profit_amount" 
+                                   step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="alert alert-info">
+                            <strong><i class="bi bi-calculator me-2"></i>Net Amount:</strong>
+                            <span id="net_amount" class="fs-5 ms-2">Rs. 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('easypaisa') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Save Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calculate net amount
+    function calculateNetAmount() {
+        const totalAmount = parseFloat(document.getElementById('total_amount').value) || 0;
+        const profitAmount = parseFloat(document.getElementById('profit_amount').value) || 0;
+        const netAmount = totalAmount - profitAmount;
+        
+        document.getElementById('net_amount').textContent = 'Rs. ' + netAmount.toFixed(2);
+    }
+
+    // Add event listeners
+    document.getElementById('total_amount').addEventListener('input', calculateNetAmount);
+    document.getElementById('profit_amount').addEventListener('input', calculateNetAmount);
+
+    // Format phone number
+    document.getElementById('phone_number').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length > 4) {
+            value = value.substring(0, 4) + '-' + value.substring(4, 11);
+        }
+        e.target.value = value;
+    });
+</script>
+{% endblock %}

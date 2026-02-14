@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mobile Shop Management{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold border-bottom">
+                <i class="bi bi-phone me-2"></i>Mobile Shop
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </a>
+                <a href="{{ url_for('inventory') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint in ['inventory', 'add_inventory', 'edit_inventory'] %}active{% endif %}">
+                    <i class="bi bi-box-seam me-2"></i>Inventory
+                </a>
+                <a href="{{ url_for('sales') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint in ['sales', 'add_sale'] %}active{% endif %}">
+                    <i class="bi bi-cart-check me-2"></i>Sales
+                </a>
+                <a href="{{ url_for('expenses') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint in ['expenses', 'add_expense'] %}active{% endif %}">
+                    <i class="bi bi-wallet2 me-2"></i>Expenses
+                </a>
+                <a href="{{ url_for('easypaisa') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint in ['easypaisa', 'add_easypaisa'] %}active{% endif %}">
+                    <i class="bi bi-phone-flip me-2"></i>Easy Paisa
+                </a>
+                <a href="{{ url_for('revenue') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint == 'revenue' %}active{% endif %}">
+                    <i class="bi bi-cash-stack me-2"></i>Revenue
+                </a>
+                <a href="{{ url_for('reports') }}" class="list-group-item list-group-item-action bg-dark text-white {% if request.endpoint == 'reports' %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line me-2"></i>Reports
+                </a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action bg-dark text-white border-top mt-3">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-dark" id="sidebarToggle">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <span class="navbar-text ms-auto">
+                        <i class="bi bi-person-circle me-2"></i>{{ session.username }}
+                    </span>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Toggle sidebar
+        document.getElementById("sidebarToggle").addEventListener("click", function(e) {
+            e.preventDefault();
+            document.getElementById("wrapper").classList.toggle("toggled");
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

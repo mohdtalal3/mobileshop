@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-bar-chart-line me-2"></i>Business Reports</h2>
+    <div>
+        <form method="GET" class="d-flex gap-2">
+            <input type="date" name="start_date" class="form-control" value="{{ start_date }}" required>
+            <input type="date" name="end_date" class="form-control" value="{{ end_date }}" required>
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+</div>
+
+<!-- Daily Sales Report -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Daily Sales Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Number of Sales</th>
+                        <th>Total Sales Amount</th>
+                        <th>Total Purchase Cost</th>
+                        <th>Total Profit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale_day in daily_sales %}
+                    <tr>
+                        <td>{{ sale_day.date }}</td>
+                        <td>{{ sale_day.num_sales }}</td>
+                        <td class="fw-bold text-success">Rs {{ "{:,.2f}".format(sale_day.total_sales) }}</td>
+                        <td class="text-danger">Rs {{ "{:,.2f}".format(sale_day.total_purchase) }}</td>
+                        <td class="fw-bold text-info">Rs {{ "{:,.2f}".format(sale_day.total_profit) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No sales data for this period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if daily_sales %}
+                <tfoot class="table-light">
+                    <tr>
+                        <th>Total:</th>
+                        <th>{{ daily_sales | sum(attribute='num_sales') }}</th>
+                        <th class="text-success">Rs {{ "{:,.2f}".format(daily_sales | sum(attribute='total_sales')) }}</th>
+                        <th class="text-danger">Rs {{ "{:,.2f}".format(daily_sales | sum(attribute='total_purchase')) }}</th>
+                        <th class="text-info">Rs {{ "{:,.2f}".format(daily_sales | sum(attribute='total_profit')) }}</th>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Category Wise Inventory -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-boxes me-2"></i>Category-wise Inventory Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Number of Items</th>
+                        <th>Total Quantity</th>
+                        <th>Total Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in category_inventory %}
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ cat.category }}</span></td>
+                        <td>{{ cat.num_items }}</td>
+                        <td>{{ cat.total_quantity }}</td>
+                        <td class="fw-bold">Rs {{ "{:,.2f}".format(cat.total_value) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No inventory data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if category_inventory %}
+                <tfoot class="table-light">
+                    <tr>
+                        <th>Total:</th>
+                        <th>{{ category_inventory | sum(attribute='num_items') }}</th>
+                        <th>{{ category_inventory | sum(attribute='total_quantity') }}</th>
+                        <th>Rs {{ "{:,.2f}".format(category_inventory | sum(attribute='total_value')) }}</th>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Top Selling Items -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Top 10 Selling Items</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Item Name</th>
+                        <th>Total Units Sold</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in top_items %}
+                    <tr>
+                        <td>
+                            {% if loop.index == 1 %}
+                                <i class="bi bi-trophy-fill text-warning"></i>
+                            {% elif loop.index == 2 %}
+                                <i class="bi bi-trophy-fill text-secondary"></i>
+                            {% elif loop.index == 3 %}
+                                <i class="bi bi-trophy-fill text-danger"></i>
+                            {% else %}
+                                {{ loop.index }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.item_name }}</td>
+                        <td><span class="badge bg-primary">{{ item.total_sold }} units</span></td>
+                        <td class="fw-bold">Rs {{ "{:,.2f}".format(item.total_revenue) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">No sales data for this period</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

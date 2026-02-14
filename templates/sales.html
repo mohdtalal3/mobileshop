@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Sales - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-cart-check me-2"></i>Sales Management</h2>
+    <a href="{{ url_for('add_sale') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle me-2"></i>Record New Sale
+    </a>
+</div>
+
+<!-- Date Filter Section -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('sales') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">
+                    <i class="bi bi-calendar-range me-1"></i>Start Date
+                </label>
+                <input type="date" 
+                       class="form-control" 
+                       id="start_date" 
+                       name="start_date" 
+                       value="{{ start_date or '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">
+                    <i class="bi bi-calendar-check me-1"></i>End Date
+                </label>
+                <input type="date" 
+                       class="form-control" 
+                       id="end_date" 
+                       name="end_date" 
+                       value="{{ end_date or '' }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>Apply Filter
+                </button>
+                <a href="{{ url_for('sales') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+{% if sales %}
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm bg-light">
+            <div class="card-body">
+                <h6 class="text-muted">Total Sales Count</h6>
+                <h3>{{ sales | length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-success text-white">
+            <div class="card-body">
+                <h6>Total Revenue</h6>
+                <h3>Rs {{ "{:,.2f}".format(sales | sum(attribute='total_selling_price')) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm bg-info text-white">
+            <div class="card-body">
+                <h6>Total Profit</h6>
+                <h3>Rs {{ "{:,.2f}".format(sales | sum(attribute='profit')) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm" style="background: #28a745; color: white;">
+            <div class="card-body">
+                <h6><i class="bi bi-cash me-1"></i>Cash Payments</h6>
+                <h3>Rs {{ "{:,.2f}".format(cash_total) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card border-0 shadow-sm" style="background: #007bff; color: white;">
+            <div class="card-body">
+                <h6><i class="bi bi-credit-card me-1"></i>Other Payments</h6>
+                <h3>Rs {{ "{:,.2f}".format(other_total) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Sales Table -->
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Quantity Sold</th>
+                        <th>Selling Price (Unit)</th>
+                        <th>Total Amount</th>
+                        <th>Profit</th>
+                        <th>Payment Method</th>
+                        <th>Sale Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                    <tr>
+                        <td>{{ sale.id }}</td>
+                        <td>{{ sale.inventory_item.item_name }}</td>
+                        <td><span class="badge bg-secondary">{{ sale.inventory_item.category }}</span></td>
+                        <td>{{ sale.quantity_sold }}</td>
+                        <td>Rs {{ "{:,.2f}".format(sale.selling_price) }}</td>
+                        <td class="fw-bold">Rs {{ "{:,.2f}".format(sale.total_selling_price) }}</td>
+                        <td>
+                            <span class="{% if sale.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                Rs {{ "{:,.2f}".format(sale.profit) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if sale.payment_method == 'Cash' %}bg-success{% elif sale.payment_method == 'Online' %}bg-primary{% else %}bg-info{% endif %}">
+                                {{ sale.payment_method or 'Cash' }}
+                            </span>
+                        </td>
+                        <td>{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No sales recorded yet. <a href="{{ url_for('add_sale') }}">Record your first sale</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if sales %}
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="5" class="text-end">Total:</th>
+                        <th>Rs {{ "{:,.2f}".format(sales | sum(attribute='total_selling_price')) }}</th>
+                        <th>Rs {{ "{:,.2f}".format(sales | sum(attribute='profit')) }}</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-box-seam me-2"></i>Inventory Management</h2>
+    <a href="{{ url_for('quick_add_inventory') }}" class="btn btn-success">
+        <i class="bi bi-lightning-charge me-2"></i>Quick Add (Excel Style)
+    </a>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('inventory') }}" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">
+                    <i class="bi bi-search me-1"></i>Search Items
+                </label>
+                <input type="text" 
+                       class="form-control" 
+                       id="search" 
+                       name="search" 
+                       placeholder="Search by item name, category, or supplier..." 
+                       value="{{ search_query or '' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label d-block">&nbsp;</label>
+                <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           id="low_stock" 
+                           name="low_stock" 
+                           value="true"
+                           {% if show_low_stock == 'true' %}checked{% endif %}>
+                    <label class="form-check-label" for="low_stock">
+                        <i class="bi bi-exclamation-triangle text-warning me-1"></i>Show Low Stock Only
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label d-block">&nbsp;</label>
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-funnel me-1"></i>Apply Filters
+                </button>
+                <a href="{{ url_for('inventory') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Purchase Price</th>
+                        <th>Quantity</th>
+                        <th>Total Cost</th>
+                        <th>Supplier</th>
+                        <th>Added Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.item_name }}</td>
+                        <td><span class="badge bg-secondary">{{ item.category }}</span></td>
+                        <td>Rs {{ "{:,.2f}".format(item.purchase_price) }}</td>
+                        <td>
+                            <span class="{% if item.is_out_of_stock %}text-danger{% elif item.is_low_stock %}text-warning{% endif %}">
+                                {{ item.quantity }}
+                            </span>
+                        </td>
+                        <td>Rs {{ "{:,.2f}".format(item.total_purchase_cost) }}</td>
+                        <td>{{ item.supplier or '-' }}</td>
+                        <td>{{ item.added_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if item.is_out_of_stock %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                            {% elif item.is_low_stock %}
+                                <span class="badge bg-warning text-dark">Low Stock</span>
+                            {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('edit_inventory', id=item.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{{ url_for('delete_inventory', id=item.id) }}" 
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Are you sure you want to delete this item?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center text-muted py-4">
+                            No inventory items found. <a href="{{ url_for('add_inventory') }}">Add your first item</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Items</h6>
+                    <h3>{{ items | length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Inventory Value</h6>
+                    <h3>Rs {{ "{:,.2f}".format(items | sum(attribute='total_purchase_cost')) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted">Low Stock Items</h6>
+                    <h3 class="text-warning">{{ items | selectattr('is_low_stock') | list | length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

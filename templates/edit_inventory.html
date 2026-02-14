@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Inventory - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-pencil me-2"></i>Edit Inventory Item</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('inventory') }}">Inventory</a></li>
+            <li class="breadcrumb-item active">Edit Item</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('edit_inventory', id=item.id) }}">
+                    <div class="mb-3">
+                        <label for="item_name" class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" id="item_name" name="item_name" 
+                               value="{{ item.item_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="Mobile Phones" {% if item.category == 'Mobile Phones' %}selected{% endif %}>Mobile Phones</option>
+                            <option value="Chargers" {% if item.category == 'Chargers' %}selected{% endif %}>Chargers</option>
+                            <option value="Cables" {% if item.category == 'Cables' %}selected{% endif %}>Cables</option>
+                            <option value="Earphones" {% if item.category == 'Earphones' %}selected{% endif %}>Earphones</option>
+                            <option value="Accessories" {% if item.category == 'Accessories' %}selected{% endif %}>Accessories</option>
+                            <option value="Power Banks" {% if item.category == 'Power Banks' %}selected{% endif %}>Power Banks</option>
+                            <option value="Screen Protectors" {% if item.category == 'Screen Protectors' %}selected{% endif %}>Screen Protectors</option>
+                            <option value="Phone Cases" {% if item.category == 'Phone Cases' %}selected{% endif %}>Phone Cases</option>
+                            <option value="Other" {% if item.category == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="purchase_price" class="form-label">Purchase Price (Rs) *</label>
+                            <input type="number" step="0.01" class="form-control" id="purchase_price" 
+                                   name="purchase_price" value="{{ item.purchase_price }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="quantity" class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" 
+                                   value="{{ item.quantity }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="supplier" class="form-label">Supplier (Optional)</label>
+                        <input type="text" class="form-control" id="supplier" name="supplier" 
+                               value="{{ item.supplier or '' }}">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>Update Item
+                        </button>
+                        <a href="{{ url_for('inventory') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

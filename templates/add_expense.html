@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Add Expense - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2><i class="bi bi-plus-circle me-2"></i>Add New Expense</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('expenses') }}">Expenses</a></li>
+            <li class="breadcrumb-item active">Add Expense</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('add_expense') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Expense Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="e.g., Monthly Shop Rent" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Electricity">Electricity</option>
+                            <option value="Salaries">Salaries</option>
+                            <option value="Internet">Internet</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Maintenance">Maintenance</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Miscellaneous">Miscellaneous</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="amount" class="form-label">Amount (Rs) *</label>
+                            <input type="number" step="0.01" class="form-control" id="amount" 
+                                   name="amount" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="expense_date" class="form-label">Expense Date *</label>
+                            <input type="date" class="form-control" id="expense_date" name="expense_date" 
+                                   value="{{ today }}" required>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> Expenses will affect your net profit calculations.
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-check-circle me-2"></i>Add Expense
+                        </button>
+                        <a href="{{ url_for('expenses') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

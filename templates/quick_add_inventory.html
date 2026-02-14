@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Quick Add Inventory - Mobile Shop Management{% endblock %}
+
+{% block content %}
+<style>
+    .excel-input {
+        border: 1px solid #dee2e6;
+        background: white;
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+        border-radius: 4px;
+    }
+    .excel-input:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+    .excel-row {
+        background-color: white;
+        transition: background-color 0.2s;
+    }
+    .excel-row:hover {
+        background-color: #f8f9fa;
+    }
+    .excel-row.success-row {
+        background-color: #d1e7dd;
+    }
+    .excel-row td {
+        padding: 10px !important;
+        vertical-align: middle;
+    }
+    .fixed-header {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .action-buttons {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 1000;
+        width: 200px;
+    }
+    .stats-card {
+        position: fixed;
+        top: 80px;
+        right: 240px;
+        z-index: 999;
+        min-width: 200px;
+    }
+    .table-container {
+        padding-bottom: 50px;
+        margin-right: 0px;
+    }
+    .action-btn-sm {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+</style>
+
+<div class="mb-4">
+    <h2><i class="bi bi-lightning-charge me-2"></i>Quick Add Inventory (Excel Style)</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('inventory') }}">Inventory</a></li>
+            <li class="breadcrumb-item active">Quick Add</li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Stats Card -->
+<div class="card border-0 shadow-sm stats-card">
+    <div class="card-body p-2">
+        <h6 class="text-muted mb-2" style="font-size: 12px;"><i class="bi bi-graph-up me-1"></i>Stats</h6>
+        <div class="mb-1">
+            <small class="text-muted" style="font-size: 11px;">Items:</small>
+            <h5 class="mb-0" id="itemsAddedCount">0</h5>
+        </div>
+        <div>
+            <small class="text-muted" style="font-size: 11px;">Value:</small>
+            <h6 class="mb-0 text-success">Rs <span id="totalValue">0.00</span></h6>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+    <button class="btn btn-outline-primary btn-sm mb-2 w-100 action-btn-sm" onclick="addMoreRows(5)">
+        <i class="bi bi-plus-square me-1"></i>Add 5 Rows
+    </button>
+    <button class="btn btn-success btn-sm mb-2 w-100 action-btn-sm" onclick="saveAllItems()" id="saveAllBtn">
+        <i class="bi bi-save me-1"></i>Save All
+    </button>
+    <a href="{{ url_for('inventory') }}" class="btn btn-outline-secondary btn-sm w-100 action-btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<!-- Instructions -->
+<div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    <strong>Instructions:</strong> 
+    <ul class="mb-0 mt-2">
+        <li>Fill in multiple rows like Excel - use <strong>Enter</strong> or <strong>Tab</strong> to move between fields</li>
+        <li>Press <strong>Enter</strong> on the last field to automatically create a new row</li>
+        <li>When done, click <strong>Save All</strong> button to save everything at once</li>
+        <li>Use <strong>Add 5 More Rows</strong> button to quickly add more empty rows</li>
+        <li>All items are saved in one go without page refresh</li>
+    </ul>
+</div>
+
+<!-- Excel-like Table -->
+<div class="card border-0 shadow-sm table-container">
+    <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+            <table class="table table-bordered mb-0">
+                <thead class="table-dark fixed-header">
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 20%;">Item Name *</th>
+                        <th style="width: 15%;">Category *</th>
+                        <th style="width: 12%;">Purchase Price (Rs) *</th>
+                        <th style="width: 10%;">Quantity *</th>
+                        <th style="width: 15%;">Supplier</th>
+                        <th style="width: 12%;">Total Cost</th>
+                        <th style="width: 11%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="excelTableBody">
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+let rowCounter = 0;
+let itemsAdded = 0;
+let totalValue = 0;
+
+const categories = [
+    'Mobile Phones',
+    'Chargers',
+    'Cables',
+    'Earphones',
+    'Accessories',
+    'Power Banks',
+    'Screen Protectors',
+    'Phone Cases',
+    'Other'
+];
+
+function createRow() {
+    rowCounter++;
+    const row = document.createElement('tr');
+    row.className = 'excel-row';
+    row.id = 'row-' + rowCounter;
+    
+    let categoryOptions = '<option value="">Select</option>';
+    categories.forEach(cat => {
+        categoryOptions += '<option value="' + cat + '">' + cat + '</option>';
+    });
+    
+    row.innerHTML = '<td class="text-center">' + rowCounter + '</td>' +
+        '<td><input type="text" class="excel-input item-name" placeholder="Enter item name" data-field="itemName"></td>' +
+        '<td><select class="excel-input category" data-field="category">' + categoryOptions + '</select></td>' +
+        '<td><input type="number" class="excel-input purchase-price" placeholder="0.00" step="0.01" min="0" data-field="price"></td>' +
+        '<td><input type="number" class="excel-input quantity" placeholder="0" min="0" data-field="quantity"></td>' +
+        '<td><input type="text" class="excel-input supplier" placeholder="Supplier name" data-field="supplier"></td>' +
+        '<td class="text-center"><span class="total-cost text-muted">Rs 0.00</span></td>' +
+        '<td class="text-center">' +
+            '<button class="btn btn-sm btn-danger" onclick="removeRow(this)" title="Remove Row">' +
+                '<i class="bi bi-trash"></i>' +
+            '</button>' +
+        '</td>';
+    
+    return row;
+}
+
+function addMoreRows(count) {
+    const tbody = document.getElementById('excelTableBody');
+    for (let i = 0; i < count; i++) {
+        tbody.appendChild(createRow());
+    }
+    const firstNewRow = tbody.children[tbody.children.length - count];
+    if (firstNewRow) {
+        firstNewRow.querySelector('.item-name').focus();
+    }
+    setupRowEventListeners();
+}
+
+function removeRow(button) {
+    const row = button.closest('tr');
+    if (confirm('Remove this row?')) {
+        row.remove();
+    }
+}
+
+function updateTotalCost(row) {
+    const price = parseFloat(row.querySelector('.purchase-price').value) || 0;
+    const quantity = parseInt(row.querySelector('.quantity').value) || 0;
+    const total = price * quantity;
+    row.querySelector('.total-cost').textContent = 'Rs ' + total.toFixed(2);
+}
+
+function saveAllItems() {
+    const tbody = document.getElementById('excelTableBody');
+    const rows = tbody.querySelectorAll('.excel-row:not(.success-row)');
+    const items = [];
+    const invalidRows = [];
+
+    rows.forEach((row, index) => {
+        const itemName = row.querySelector('.item-name').value.trim();
+        const category = row.querySelector('.category').value;
+        const purchasePrice = row.querySelector('.purchase-price').value;
+        const quantity = row.querySelector('.quantity').value;
+        const supplier = row.querySelector('.supplier').value.trim();
+
+        if (itemName) {
+            if (!category || !purchasePrice || !quantity) {
+                invalidRows.push(index + 1);
+            } else {
+                items.push({
+                    item_name: itemName,
+                    category: category,
+                    purchase_price: parseFloat(purchasePrice),
+                    quantity: parseInt(quantity),
+                    supplier: supplier,
+                    rowElement: row
+                });
+            }
+        }
+    });
+
+    if (invalidRows.length > 0) {
+        alert('Please fill in all required fields for rows: ' + invalidRows.join(', '));
+        return;
+    }
+
+    if (items.length === 0) {
+        alert('Please fill in at least one row before saving');
+        return;
+    }
+
+    if (!confirm('Save ' + items.length + ' item(s)?')) {
+        return;
+    }
+
+    const saveBtn = document.getElementById('saveAllBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+
+    const promises = items.map(item => {
+        return fetch('{{ url_for("api_add_inventory") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                item_name: item.item_name,
+                category: item.category,
+                purchase_price: item.purchase_price,
+                quantity: item.quantity,
+                supplier: item.supplier
+            })
+        }).then(response => response.json());
+    });
+
+    Promise.all(promises)
+        .then(results => {
+            let successCount = 0;
+            let failCount = 0;
+
+            results.forEach((data, index) => {
+                const row = items[index].rowElement;
+                if (data.success) {
+                    successCount++;
+                    
+                    row.classList.add('success-row');
+                    
+                    row.querySelectorAll('input, select').forEach(input => {
+                        input.disabled = true;
+                    });
+                    
+                    itemsAdded++;
+                    const itemTotal = items[index].purchase_price * items[index].quantity;
+                    totalValue += itemTotal;
+                } else {
+                    failCount++;
+                }
+            });
+
+            document.getElementById('itemsAddedCount').textContent = itemsAdded;
+            document.getElementById('totalValue').textContent = totalValue.toFixed(2);
+
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-save me-1"></i>Save All';
+
+            if (failCount === 0) {
+                showToast('Successfully added ' + successCount + ' item(s)!', 'success');
+                
+                setTimeout(() => {
+                    addMoreRows(3);
+                }, 500);
+            } else {
+                showToast('Added ' + successCount + ' item(s), ' + failCount + ' failed', 'warning');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error saving items');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bi bi-save me-1"></i>Save All';
+        });
+}
+
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible fade show';
+    toast.style.position = 'fixed';
+    toast.style.top = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.zIndex = '9999';
+    toast.style.minWidth = '300px';
+    toast.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
+}
+
+function setupRowEventListeners() {
+    document.querySelectorAll('.excel-row').forEach(row => {
+        const priceInput = row.querySelector('.purchase-price');
+        const qtyInput = row.querySelector('.quantity');
+        
+        if (priceInput) {
+            priceInput.addEventListener('input', () => updateTotalCost(row));
+        }
+        if (qtyInput) {
+            qtyInput.addEventListener('input', () => updateTotalCost(row));
+        }
+        
+        row.querySelectorAll('input, select').forEach((input, index, inputs) => {
+            input.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    
+                    const nextIndex = index + 1;
+                    if (nextIndex < inputs.length) {
+                        inputs[nextIndex].focus();
+                    } else {
+                        const tbody = document.getElementById('excelTableBody');
+                        const newRow = createRow();
+                        tbody.appendChild(newRow);
+                        setupRowEventListeners();
+                        newRow.querySelector('.item-name').focus();
+                    }
+                }
+            });
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    addMoreRows(3);
+});
+</script>
+
+{% endblock %}
